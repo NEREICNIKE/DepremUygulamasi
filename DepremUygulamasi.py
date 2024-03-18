@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QPushButton, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QPushButton, QVBoxLayout, QWidget, QTableWidget, QTableWidgetItem
 from PyQt5.QtCore import QTimer
 import requests
 from bs4 import BeautifulSoup
@@ -13,13 +13,16 @@ class EarthquakeApp(QMainWindow):
 
         layout = QVBoxLayout()
 
-        self.button = QPushButton("Görüntüle", self)
+        self.button = QPushButton("Son Depremleri Görüntüle", self)
         self.button.clicked.connect(self.update_earthquake_data)
         layout.addWidget(self.button)
 
-        self.text_edit = QTextEdit()
-        self.text_edit.setReadOnly(True)
-        layout.addWidget(self.text_edit)
+        # self.text_edit = QTextEdit()
+        # self.text_edit.setReadOnly(True)
+        # layout.addWidget(self.text_edit)
+
+        self.table_widget = QTableWidget()
+        layout.addWidget(self.table_widget)
 
         container = QWidget()
         container.setLayout(layout)
@@ -27,7 +30,7 @@ class EarthquakeApp(QMainWindow):
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_earthquake_data)
-        self.timer.start(8000)  # 10 saniyede bir güncelleme yap
+        self.timer.start(10000)  # 10 saniyede bir güncelleme yap
 
 
     def update_earthquake_data(self):
@@ -41,8 +44,11 @@ class EarthquakeApp(QMainWindow):
         table = soup.find("table")
         rows = table.find_all("tr")
 
-        earthquake_info = "-Türkiye Depremler-\n\n"
-        for i, row in enumerate(rows[:50]):
+        self.table_widget.setColumnCount(4)
+        self.table_widget.setHorizontalHeaderLabels(["Yer", "Büyüklük", "Derinlik", "Tarih"])
+        self.table_widget.setRowCount(len(rows) - 1)
+        
+        for i, row in enumerate(rows[:101]):
             cells = row.find_all("td")
 
             if cells:
@@ -51,9 +57,14 @@ class EarthquakeApp(QMainWindow):
                 longitude = cells[3].text.strip()
                 date = cells[0].text.strip()
 
-                earthquake_info += f"Yer: {location}\nBüyüklük: {magnitude}\nDerinlik: {longitude}\nTarih: {date}\n\n"
+                self.table_widget.setItem((i-1), 0, QTableWidgetItem(location))
+                self.table_widget.setItem((i-1), 1, QTableWidgetItem(magnitude))
+                self.table_widget.setItem((i-1), 2, QTableWidgetItem(longitude))
+                self.table_widget.setItem((i-1), 3, QTableWidgetItem(date))
 
-        self.text_edit.setPlainText(earthquake_info)
+
+        self.table_widget.resizeColumnsToContents()
+        self.table_widget.resizeRowsToContents()
 
 
 if __name__ == "__main__":
@@ -61,4 +72,4 @@ if __name__ == "__main__":
     window = EarthquakeApp()
     window.show()
     sys.exit(app.exec_())
-    
+   
