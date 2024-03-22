@@ -1,6 +1,6 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QPushButton, QVBoxLayout, QWidget, QTableWidget, QTableWidgetItem
-from PyQt5.QtCore import QTimer
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget, QTableWidget, QTableWidgetItem
+from PyQt5.QtCore import QTimer, Qt
 import requests
 from bs4 import BeautifulSoup
 
@@ -9,17 +9,13 @@ class EarthquakeApp(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Deprem Uygulaması")
-        self.setGeometry(100, 100, 600, 400)
+        self.setGeometry(100, 100, 700, 500)
 
         layout = QVBoxLayout()
 
         self.button = QPushButton("Son Depremleri Görüntüle", self)
         self.button.clicked.connect(self.update_earthquake_data)
         layout.addWidget(self.button)
-
-        # self.text_edit = QTextEdit()
-        # self.text_edit.setReadOnly(True)
-        # layout.addWidget(self.text_edit)
 
         self.table_widget = QTableWidget()
         layout.addWidget(self.table_widget)
@@ -63,8 +59,19 @@ class EarthquakeApp(QMainWindow):
                 self.table_widget.setItem((i-1), 3, QTableWidgetItem(date))
 
 
+        # Tablodaki her sütunun sıralanabilir olmasını sağlar
+        self.table_widget.setSortingEnabled(True)
+
+         # Tabloya yazmayı devre dışı bırakır
+        for i in range(self.table_widget.rowCount()):
+            for j in range(self.table_widget.columnCount()):
+                item = self.table_widget.item(i, j)
+                if item:
+                    item.setFlags(item.flags() & ~Qt.ItemIsEditable)
+
         self.table_widget.resizeColumnsToContents()
         self.table_widget.resizeRowsToContents()
+
 
 
 if __name__ == "__main__":
